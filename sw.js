@@ -1,14 +1,27 @@
-const CACHE_NAME = 'kaikei-app-v1';
-const urlsToCache = [
-    './index.html',
-    './kaikeisoft.js',
-    './manifest.json'
-];
-
 self.addEventListener('install', (event) => {
     event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => {
-            return cache.addAll(urlsToCache);
+        caches.open('kaikei-app-v1').then((cache) => {
+            return cache.addAll([
+                './',
+                './index.html',
+                './kaikeisoft.js',
+                './manifest.json',
+                './style.css'
+            ]);
+        })
+    );
+});
+
+self.addEventListener('activate', (event) => {
+    event.waitUntil(
+        caches.keys().then((cacheNames) => {
+            return Promise.all(
+                cacheNames.filter((cacheName) => {
+                    return cacheName.startsWith('kaikei-app-') && cacheName !== 'kaikei-app-v1';
+                }).map((cacheName) => {
+                    return caches.delete(cacheName);
+                })
+            );
         })
     );
 });

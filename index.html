@@ -12,6 +12,7 @@
             --background-color: #111827;
             --card-bg: #1F2937;
             --text-color: #F3F4F6;
+            --form-color: var(--income-gradient);
         }
 
         body {
@@ -37,6 +38,7 @@
             margin: 0;
             background: linear-gradient(to right, #fff, #E0E7FF);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
@@ -82,26 +84,50 @@
         .tabs {
             display: flex;
             margin: 30px 0;
-            background: var(--card-bg);
-            border-radius: 15px;
-            padding: 5px;
+            gap: 15px;
         }
 
         .tab {
             flex: 1;
-            padding: 15px 30px;
-            border: none;
-            border-radius: 10px;
-            color: #9CA3AF;
+            padding: 20px;
+            border: 3px solid #4B5563;
+            border-radius: 15px;
+            color: white;
             font-size: 1.1em;
             cursor: pointer;
             transition: all 0.3s;
+            background: transparent;
+            position: relative;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
         }
 
+        .tab:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        /* タブのアクティブ状態のスタイルを修正 */
         .tab.active {
-            background: var(--primary-gradient);
+            border-color: transparent;
             color: white;
-            box-shadow: 0 5px 15px rgba(107, 115, 255, 0.3);
+        }
+
+        .tab:first-child.active {
+            background: var(--income-gradient);
+            border-color: #00C853;
+        }
+
+        .tab:last-child.active {
+            background: var(--expense-gradient);
+            border-color: #FF4081;
+        }
+
+        /* 非アクティブ状態のタブのスタイル */
+        .tab:not(.active) {
+            background: transparent;
+            color: #9CA3AF;
         }
 
         /* フォーム */
@@ -224,6 +250,138 @@
         .dashboard, .transaction-form, .transaction-list {
             animation: fadeIn 0.6s ease-out;
         }
+
+        /* フォームのモード切り替え */
+        .expense-mode {
+            --form-color: var(--expense-gradient);
+        }
+
+        .expense-mode .camera-button,
+        .expense-mode .submit-button {
+            background: var(--expense-gradient);
+        }
+
+        .expense-mode .submit-button:hover {
+            box-shadow: 0 5px 15px rgba(255, 64, 129, 0.3);
+        }
+
+        /* プレビュー画像のスタイル */
+        #preview {
+            max-width: 100%;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        /* チャット履歴 */
+        .chat-container {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 20px;
+            margin-top: 40px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+
+        .chat-messages {
+            height: 300px;
+            overflow-y: auto;
+            padding: 10px;
+            background: #374151;
+            border-radius: 12px;
+            margin-bottom: 10px;
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 15px;
+            background: #374151;
+            border: 2px solid #4B5563;
+            border-radius: 12px;
+            color: white;
+        }
+
+        .chat-input button {
+            padding: 15px 30px;
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+
+        .user-message {
+            background: var(--primary-gradient);
+            margin-left: auto;
+        }
+
+        .assistant-message {
+            background: #4B5563;
+            margin-right: auto;
+        }
+
+        .transaction-filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: var(--card-bg);
+            border-radius: 12px;
+        }
+
+        .transaction-filters select,
+        .transaction-filters input {
+            padding: 8px;
+            border-radius: 8px;
+            border: 2px solid #4B5563;
+            background: #374151;
+            color: white;
+        }
+
+        .transaction-pagination {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+            align-items: center;
+        }
+
+        .transaction-pagination button {
+            padding: 8px 16px;
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .transaction-item {
+            margin-bottom: 10px;
+            transition: transform 0.2s;
+        }
+
+        .transaction-item:hover {
+            transform: translateX(10px);
+        }
+
+        .income .transaction-amount {
+            color: #00C853;
+        }
+
+        .expense .transaction-amount {
+            color: #FF4081;
+        }
     </style>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -274,6 +432,8 @@
                 <input type="date" id="date" required>
             </div>
 
+            <input type="hidden" id="type" value="income">
+
             <div class="form-group">
                 <label for="category">経費カテゴリー</label>
                 <select id="category" required>
@@ -312,17 +472,37 @@
 
     <!-- 取引履歴 -->
     <div class="transaction-list">
-        <h2>最近の取引</h2>
-        <!-- サンプル取引 -->
-        <div class="transaction-item">
-            <div class="receipt-icon">🧾</div>
-            <div class="transaction-details">
-                <h3>事務用品購入</h3>
-                <div class="transaction-meta">
-                    2024/02/20 ・ 消耗品費
-                </div>
-            </div>
-            <div class="transaction-amount expense">-¥3,000</div>
+        <h2>取引履歴</h2>
+        <div class="transaction-filters">
+            <select id="monthFilter">
+                <option value="">全期間</option>
+                <option value="current">今月</option>
+                <option value="last">先月</option>
+            </select>
+            <select id="typeFilter">
+                <option value="">全て</option>
+                <option value="income">収入</option>
+                <option value="expense">経費</option>
+            </select>
+            <input type="text" id="searchInput" placeholder="検索...">
+        </div>
+        <div class="transaction-items">
+            <!-- 取引リストがここに表示される -->
+        </div>
+        <div class="transaction-pagination">
+            <button id="prevPage">前へ</button>
+            <span id="pageInfo">1/1</span>
+            <button id="nextPage">次へ</button>
+        </div>
+    </div>
+
+    <!-- チャット履歴 -->
+    <div class="chat-container">
+        <h2>サポートチャット</h2>
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input">
+            <input type="text" id="chatInput" placeholder="メッセージを入力...">
+            <button id="sendMessage">送信</button>
         </div>
     </div>
 
