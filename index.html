@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>個人事業主の青色申告</title>
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #6B73FF 0%, #000DFF 100%);
+            --income-gradient: linear-gradient(135deg, #00C853 0%, #009624 100%);
+            --expense-gradient: linear-gradient(135deg, #FF4081 0%, #C51162 100%);
+            --background-color: #111827;
+            --card-bg: #1F2937;
+            --text-color: #F3F4F6;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: var(--background-color);
+            color: var(--text-color);
+        }
+
+        .header {
+            text-align: center;
+            margin: 40px 0;
+            background: var(--primary-gradient);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin: 0;
+            background: linear-gradient(to right, #fff, #E0E7FF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* ダッシュボード */
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin: 40px 0;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+        }
+
+        .stat-card .title {
+            font-size: 1em;
+            color: #9CA3AF;
+            margin-bottom: 15px;
+        }
+
+        .stat-card .amount {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+
+        .stat-card.sales { border-left: 4px solid #00C853; }
+        .stat-card.expenses { border-left: 4px solid #FF4081; }
+        .stat-card.profit { border-left: 4px solid #6B73FF; }
+
+        /* タブ */
+        .tabs {
+            display: flex;
+            margin: 30px 0;
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 5px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            color: #9CA3AF;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: 0 5px 15px rgba(107, 115, 255, 0.3);
+        }
+
+        /* フォーム */
+        .transaction-form {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #9CA3AF;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 15px;
+            background: #374151;
+            border: 2px solid #4B5563;
+            border-radius: 12px;
+            color: white;
+            font-size: 1.1em;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #6B73FF;
+            box-shadow: 0 0 0 3px rgba(107, 115, 255, 0.2);
+            outline: none;
+        }
+
+        .camera-button {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1em;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .camera-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(107, 115, 255, 0.3);
+        }
+
+        .submit-button {
+            background: var(--income-gradient);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1em;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .submit-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 200, 83, 0.3);
+        }
+
+        /* 取引履歴 */
+        .transaction-list {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 20px;
+            margin-top: 40px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+
+        .transaction-item {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 20px;
+            padding: 20px;
+            border-bottom: 1px solid #374151;
+            transition: transform 0.3s;
+            cursor: pointer;
+        }
+
+        .transaction-item:hover {
+            transform: translateX(10px);
+            background: #2D3748;
+            border-radius: 12px;
+        }
+
+        .receipt-icon {
+            font-size: 24px;
+            background: #374151;
+            padding: 15px;
+            border-radius: 12px;
+        }
+
+        .hint {
+            color: #9CA3AF;
+            font-size: 0.8em;
+            margin-top: 8px;
+        }
+
+        /* アニメーション */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dashboard, .transaction-form, .transaction-list {
+            animation: fadeIn 0.6s ease-out;
+        }
+    </style>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="青色申告">
+    <link rel="apple-touch-icon" href="./icon-192.png">
+    <link rel="manifest" href="./manifest.json">
+    <meta name="permissions-policy" content="camera=*">
+</head>
+<body>
+    <div class="header">
+        <h1>個人事業主の青色申告</h1>
+        <p>簡単入力で確定申告をラクラク管理</p>
+    </div>
+
+    <!-- 収支サマリー -->
+    <div class="dashboard">
+        <div class="stat-card sales">
+            <div class="title">売上金額（収入）</div>
+            <div class="amount" id="totalSales">¥0</div>
+            <div class="period">今月</div>
+        </div>
+        <div class="stat-card expenses">
+            <div class="title">経費（支出）</div>
+            <div class="amount" id="totalExpenses">¥0</div>
+            <div class="period">今月</div>
+        </div>
+        <div class="stat-card profit">
+            <div class="title">所得金額</div>
+            <div class="amount" id="totalProfit">¥0</div>
+            <div class="period">今月</div>
+        </div>
+    </div>
+
+    <!-- 取引入力フォーム -->
+    <div class="tabs">
+        <button class="tab active">収入を記録</button>
+        <button class="tab">経費を記録</button>
+    </div>
+
+    <div class="transaction-form">
+        <button type="button" id="cameraButton" class="camera-button">
+            📷 レシート/領収書を撮影
+        </button>
+        <img id="preview" alt="レシートプレビュー" style="display: none;">
+        
+        <form id="transactionForm">
+            <div class="form-group">
+                <label for="date">取引日</label>
+                <input type="date" id="date" required>
+            </div>
+
+            <div class="form-group">
+                <label for="category">経費カテゴリー</label>
+                <select id="category" required>
+                    <optgroup label="売上（収入）">
+                        <option value="sales">売上</option>
+                        <option value="other_income">雑収入</option>
+                    </optgroup>
+                    <optgroup label="経費（支出）">
+                        <option value="supplies">消耗品費</option>
+                        <option value="travel">旅費交通費</option>
+                        <option value="utilities">水道光熱費</option>
+                        <option value="communication">通信費</option>
+                        <option value="rent">地代家賃</option>
+                        <option value="insurance">保険料</option>
+                        <option value="tax">租税公課</option>
+                    </optgroup>
+                </select>
+                <div class="hint">※青色申告に対応したカテゴリーで分類されます</div>
+            </div>
+
+            <div class="form-group">
+                <label for="amount">金額</label>
+                <input type="number" id="amount" required>
+                <div class="hint">※税込金額を入力してください</div>
+            </div>
+
+            <div class="form-group">
+                <label for="description">取引内容</label>
+                <input type="text" id="description" placeholder="例：事務用品購入">
+                <div class="hint">※具体的な内容を記入すると申告時に便利です</div>
+            </div>
+
+            <button type="submit" class="submit-button">記帳する</button>
+        </form>
+    </div>
+
+    <!-- 取引履歴 -->
+    <div class="transaction-list">
+        <h2>最近の取引</h2>
+        <!-- サンプル取引 -->
+        <div class="transaction-item">
+            <div class="receipt-icon">🧾</div>
+            <div class="transaction-details">
+                <h3>事務用品購入</h3>
+                <div class="transaction-meta">
+                    2024/02/20 ・ 消耗品費
+                </div>
+            </div>
+            <div class="transaction-amount expense">-¥3,000</div>
+        </div>
+    </div>
+
+    <script src="./kaikeisoft.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js');
+        }
+    </script>
+</body>
+</html>
