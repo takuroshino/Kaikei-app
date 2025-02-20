@@ -2,9 +2,7 @@ const CACHE_NAME = 'kaikei-app-v1';
 const urlsToCache = [
     './index.html',
     './kaikeisoft.js',
-    './manifest.json',
-    './icon-192.png',
-    './icon-512.png'
+    './manifest.json'
 ];
 
 self.addEventListener('install', (event) => {
